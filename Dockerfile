@@ -4,22 +4,20 @@ FROM golang:1.23-alpine AS builder
 RUN apk add --no-cache git ca-certificates
 
 # Clone and build the registry from source with latest Go (fixes vulnerability)
-RUN set -eux; \
-    git clone --depth 1 --branch v3.0.0 https://github.com/distribution/distribution.git /src; \
-    cd /src; \
-    CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o registry ./cmd/registry
+WORKDIR /src
+RUN git clone --depth 1 --branch v3.0.0 https://github.com/distribution/distribution.git .
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /registry ./cmd/registry
+
+# Test the binary works in builder
+RUN /registry --version
 
 # Final stage - minimal runtime image
 FROM alpine:3.21
 
 RUN apk add --no-cache ca-certificates
 
-# Copy the compiled binary from builder stage and make it executable
-COPY --from=builder /src/registry /bin/registry
-RUN chmod +x /bin/registry
-
-# Verify the binary works
-RUN registry --version
+# Copy the compiled binary from builder stage
+COPY --from=builder /registry /bin/registry
 
 COPY ./config-example.yml /etc/distribution/config.yml
 
