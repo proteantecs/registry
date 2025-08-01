@@ -14,8 +14,9 @@ FROM alpine:3.21
 
 RUN apk add --no-cache ca-certificates
 
-# Copy the compiled binary from builder stage
+# Copy the compiled binary from builder stage and make it executable
 COPY --from=builder /src/registry /bin/registry
+RUN chmod +x /bin/registry
 
 # Verify the binary works
 RUN registry --version
