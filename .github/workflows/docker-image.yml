@@ -30,7 +30,7 @@ jobs:
 
       - name: Login to DockerHub
         # Only login if we're going to push (main or develop branches)
-        if: github.ref_name == 'main' || github.ref_name == 'develop'
+        if: github.ref_name == 'master' || github.ref_name == 'develop'
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -43,9 +43,9 @@ jobs:
           echo ${tag_part}
           echo "tag_name=${tag_part}" >> $GITHUB_ENV
 
-      # Build and push for main branch
-      - name: Build and push Docker image (main)
-        if: github.ref_name == 'main'
+      # Build and push for master branch
+      - name: Build and push Docker image (master)
+        if: github.ref_name == 'master'
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -65,7 +65,7 @@ jobs:
 
       # Build only for other branches (verification)
       - name: Build Docker image (verification only)
-        if: github.ref_name != 'main' && github.ref_name != 'develop'
+        if: github.ref_name != 'master' && github.ref_name != 'develop'
         uses: docker/build-push-action@v5
         with:
           context: .
